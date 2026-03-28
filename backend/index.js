@@ -1,7 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const app = express();
+
+app.use(cors());
+app.use(express.json());
 
 // ---------------- DATABASE CONNECTION ----------------
 
@@ -43,6 +47,38 @@ app.get("/users", async (req, res) => {
     res.json(users);
   } catch (err) {
     res.json({ error: err.message });
+  }
+});
+
+
+// ---------------- LOGIN ----------------
+
+app.post("/login", async (req, res) => {
+  try {
+    const { rfid, parent_name } = req.body;
+    
+    if (!rfid || !parent_name) {
+      return res.status(400).json({ message: "RFID and Parent Name are required" });
+    }
+
+    const user = await User.findOne({ rfid: rfid });
+
+    if (!user) {
+      return res.status(404).json({ message: "Invalid RFID" });
+    }
+
+    // Case-insensitive comparison for parent name
+    if (user.parent_name.trim().toLowerCase() !== parent_name.trim().toLowerCase()) {
+      return res.status(401).json({ message: "Invalid Parent Name" });
+    }
+
+    res.json({
+      message: "Login successful",
+      user: user
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
