@@ -71,6 +71,33 @@ const Bus = mongoose.model("Bus", {
   driver_phone: String
 });
 
+// ---------------- GET DRIVER INFO FOR PARENT ----------------
+
+app.get("/driver-info/:parent_name", async (req, res) => {
+  try {
+    // 1. Find the child document associated with this parent
+    const user = await User.findOne({ parent_name: req.params.parent_name });
+    
+    if (!user) return res.json({ message: "Parent not found in database" });
+
+    // 2. Find the specific bus assigned to their child
+    const bus = await Bus.findOne({ bus_id: user.bus_id });
+
+    if (!bus) return res.json({ message: "No bus assigned to this child yet" });
+
+    // 3. Return only exactly what the parent needs to see
+    res.json({
+      child_name: user.child_name,
+      bus_number: bus.bus_number,
+      driver_name: bus.driver_name,
+      driver_phone: bus.driver_phone
+    });
+
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
+
 
 // ---------------- LOCATION MODEL ----------------
 
