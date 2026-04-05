@@ -173,11 +173,15 @@ app.get("/track/:rfid", async (req, res) => {
 
 app.get("/update-location", async (req, res) => {
   try {
+    const bus_id = req.query.bus_id || "bus_01";
+    const lat = req.query.lat ? parseFloat(req.query.lat) : 23.30 + Math.random();
+    const lng = req.query.lng ? parseFloat(req.query.lng) : 77.40 + Math.random();
+    
     await Location.updateOne(
-      { bus_id: "bus_01" },
+      { bus_id: bus_id },
       {
-        lat: 23.30 + Math.random(),
-        lng: 77.40 + Math.random(),
+        lat: lat,
+        lng: lng,
         status: "moving"
       }
     );
@@ -244,6 +248,18 @@ app.get("/sos", async (req, res) => {
   }
 });
 
+
+
+// ---------------- GET SOS HISTORY ----------------
+
+app.get("/sos/history/:bus_id", async (req, res) => {
+  try {
+    const history = await SOS.find({ bus_id: req.params.bus_id }).sort({ _id: -1 });
+    res.json(history);
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
 
 // ---------------- ATTENDANCE ----------------
 
